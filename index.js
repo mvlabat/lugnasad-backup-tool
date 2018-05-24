@@ -78,7 +78,7 @@ function createBackup() {
     })
     .then((response) => {
       const bucket = response.data.buckets.find(b => b.bucketName === 'lugnasad');
-      if (!bucket) {
+      if (bucket) {
         console.log(bucket);
         lugnasadBucketId = bucket.bucketId;
         console.log('Loading the files list...');
@@ -97,7 +97,7 @@ function createBackup() {
         console.log('Making sql-dump...');
         execSync('drush sql-dump > dump.sql', { cwd: process.env.DRUPAL_DIR });
         console.log('Packing with 7z...');
-        execSync(`7z a -t7z -m0=lzma2 -mx=9 -mfb=64 -md=32m -ms=on -mhe=on -p'${passphrase}' ${getBackupPath(updatedFile)} ${process.env.DRUPAL_DIR}`);
+        execSync(`7z a -t7z -m0=lzma2 -mx=9 -mfb=64 -md=32m -ms=on -mmt=off -mhe=on -p'${passphrase}' ${getBackupPath(updatedFile)} ${process.env.DRUPAL_DIR}`);
         return [passphrase, lugnasadBucketId, updatedFile];
       }
       return [null, null, null];
