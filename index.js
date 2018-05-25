@@ -177,7 +177,7 @@ const transporter = nodemailer.createTransport({
 function sendMail(passphrase, response, success) {
   const status = success ? 'success' : 'failed';
   const text = success
-    ? `Passphrase: ${passphrase}\n\n{JSON.stringify(response, null, 4)}`
+    ? `Passphrase: ${passphrase}\n\n${JSON.stringify(response, null, 4)}`
     : response.toString();
   const mailOptions = {
     from: process.env.MAIL_FROM,
