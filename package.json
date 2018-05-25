@@ -12,6 +12,7 @@
   "dependencies": {
     "backblaze-b2": "^1.0.4",
     "dotenv": "^5.0.1",
+    "follow-redirects": "^1.2.5",
     "nodemailer": "^4.6.4",
     "random-words": "^1.1.0"
   },

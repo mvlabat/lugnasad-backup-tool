@@ -4,7 +4,12 @@ const fs = require('fs');
 const path = require('path');
 const randomWords = require('random-words');
 const { execSync } = require('child_process');
+const crypto = require('crypto');
 require('dotenv').config();
+
+const followRedirects = require('follow-redirects');
+
+followRedirects.maxBodyLength = 1024 * 1024 * 1024;
 
 const DAY = 1000 * 60 * 60 * 24;
 const WEEK = DAY * 7;
@@ -34,12 +39,12 @@ function getFirstFileToUpdate(files) {
       if (currentTime - file.uploadTimestamp > DAY) {
         return true;
       }
-    } else if (file.fileName === 'week.7z') {
+    } else if (file.fileName === WEEK_FILENAME) {
       hasWeeklyFile = true;
       if (currentTime - file.uploadTimestamp > WEEK) {
         return true;
       }
-    } else if (file.fileName === 'month.7z') {
+    } else if (file.fileName === MONTH_FILENAME) {
       hasMonthlyFile = true;
       if (currentTime - file.uploadTimestamp > MONTH) {
         return true;
@@ -93,6 +98,7 @@ function createBackup() {
       const { files } = response.data;
       const updatedFile = getFirstFileToUpdate(files);
       if (updatedFile) {
+        console.log(`Going to make '${updatedFile}' backup...`);
         const passphrase = randomWords(5).join('_');
         console.log('Making sql-dump...');
         execSync('drush sql-dump > dump.sql', { cwd: process.env.DRUPAL_DIR });
@@ -103,8 +109,6 @@ function createBackup() {
       return [null, null, null];
     });
 }
-
-// TODO: job abstraction.
 
 async function sendBackup(passphrase, lugnasadBucketId, fileName) {
   if (!fileName) {
@@ -141,12 +145,17 @@ async function sendBackup(passphrase, lugnasadBucketId, fileName) {
       return b2.getUploadUrl(lugnasadBucketId);
     })
     .then((response) => {
+      console.log('Loading the backup file...');
+      const data = fs.readFileSync(getBackupPath(fileName));
+      const sha1 = crypto.createHash('sha1');
+      sha1.update(data);
       console.log('Starting uploading the file...');
       return b2.uploadFile({
         uploadUrl: response.data.uploadUrl,
         uploadAuthToken: response.data.authorizationToken,
         filename: fileName,
         data: fs.readFileSync(getBackupPath(fileName)),
+        hash: sha1.digest('hex'),
       });
     })
     .then((response) => {
@@ -220,4 +229,3 @@ function run() {
 
 setInterval(run, process.env.PERIOD);
 run();
-
