@@ -199,19 +199,25 @@ function cleanup() {
   });
 }
 
-createBackup()
-  .then(([passphrase, lugnasadBucketId, fileName]) =>
-    sendBackup(passphrase, lugnasadBucketId, fileName))
-  .then(([passphrase, response]) => {
-    if (response) {
-      sendMail(passphrase, response, true);
-    } else {
-      console.log('There is no need to backup yet');
-    }
-    cleanup();
-  })
-  .catch((err) => {
-    console.error(err);
-    cleanup();
-    sendMail(null, err, false);
-  });
+function run() {
+  createBackup()
+    .then(([passphrase, lugnasadBucketId, fileName]) =>
+      sendBackup(passphrase, lugnasadBucketId, fileName))
+    .then(([passphrase, response]) => {
+      if (response) {
+        sendMail(passphrase, response, true);
+      } else {
+        console.log('There is no need to backup yet');
+      }
+      cleanup();
+    })
+    .catch((err) => {
+      console.error(err);
+      cleanup();
+      sendMail(null, err, false);
+    });
+}
+
+setInterval(run, process.env.PERIOD);
+run();
+
