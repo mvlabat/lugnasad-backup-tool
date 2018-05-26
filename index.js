@@ -54,7 +54,7 @@ function getFirstFileToUpdate(files) {
   });
 
   if (outdatedFile) {
-    return outdatedFile;
+    return outdatedFile.fileName;
   }
 
   if (!hasDailyFile) {
