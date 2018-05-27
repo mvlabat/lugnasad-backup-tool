@@ -125,7 +125,7 @@ async function sendBackup(passphrase, lugnasadBucketId, fileName) {
     })
     .then((response) => {
       console.log(response.data);
-      const { files } = response.data;
+      const { files } = response.data.filter(file => file.fileName === fileName);
 
       if (files.length > 0) {
         console.log('Old file version was found. Deleting...');
