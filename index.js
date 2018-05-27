@@ -117,7 +117,7 @@ async function sendBackup(passphrase, lugnasadBucketId, fileName) {
 
   return b2.authorize()
     .then(() => {
-      console.log('Loading the list of old file versions...');
+      console.log(`Loading the list of old file versions for '${fileName}'...`);
       return b2.listFileVersions({
         bucketId: lugnasadBucketId,
         startFileName: fileName,
